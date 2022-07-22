@@ -29,7 +29,7 @@ public class User implements UserDetails {
     private String phone;
 
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     private String password;
