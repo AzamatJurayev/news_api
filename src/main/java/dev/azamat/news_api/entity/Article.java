@@ -20,11 +20,16 @@ public class Article {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String title;
+
     @ManyToMany
     @Column(name = "category")
     private List<Category> category;
 
     @OneToOne
     private Comment comment;
+
+    @OneToOne
+    private User owner;
 
 }

@@ -26,17 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    //    private final UserService userService;
-//    private final PasswordEncoder passwordEncoder;
-//    private final AuthenticationManager authenticationManager;
-//    private final JwtProvider jwtProvider;
-//
-//    @PostMapping
-//    public ResponseEntity<?> save(@RequestBody LoginDto loginDto) {
-//        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
-////        if (authenticate.isAuthenticated())return ResponseEntity.ok("Tizimga hush kelibsiz!");
-////        return ResponseEntity.badRequest().body("Nimadur hatolik bor!!!");
-//        String token = jwtProvider.generateToken(loginDto.getUsername());
-//        return ResponseEntity.ok(token);
-//    }
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
+
+    @PostMapping
+    public ResponseEntity<?> save(@RequestBody LoginDto loginDto) {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+//        if (authenticate.isAuthenticated())return ResponseEntity.ok("Tizimga hush kelibsiz!");
+//        return ResponseEntity.badRequest().body("Nimadur hatolik bor!!!");
+        String token = jwtProvider.generateToken(loginDto.getUsername());
+        return ResponseEntity.ok(token);
+    }
 }

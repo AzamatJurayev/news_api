@@ -19,5 +19,7 @@ public class Comment {
 
     private String info;
 
-
+    public Comment(String info) {
+        this.info = info;
+    }
 }
