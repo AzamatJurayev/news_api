@@ -1,33 +1,46 @@
 package dev.azamat.news_api.service;
 
 import dev.azamat.news_api.dto.ApiResponse;
+import dev.azamat.news_api.dto.CommentDto;
+import dev.azamat.news_api.entity.*;
 import dev.azamat.news_api.entity.Comment;
-import org.springframework.beans.factory.annotation.Autowired;
+import dev.azamat.news_api.repository.*;
+import dev.azamat.news_api.repository.CommentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
-    @Autowired
-    dev.azamat.news_api.repository.CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
+    private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
+
+    public ApiResponse save(CommentDto commentDto, String usernameFromToken) {
+        Comment comment = new Comment();
+        comment.setInfo(commentDto.getInfo());
+        Optional<UserDetails> byPhone = userRepository.findByPhone(usernameFromToken);
+        comment.setOwner((User) byPhone.get());
+        Optional<Article> article = articleRepository.findById(commentDto.getArticleId());
+        if (article.isPresent()){
+            comment.setArticle(article.get());
+        }
+        Comment save = commentRepository.save(comment);
+        return ApiResponse.builder().data(save).message("Added!").success(true).build();
+    }
 
     public ApiResponse getAll() {
         return ApiResponse.builder().message("Mana").success(true).data(commentRepository.findAll()).build();
     }
 
-    public ApiResponse save(Comment comment) {
-        Comment save = commentRepository.save(comment);
-        if (save != null) {
-            return ApiResponse.builder().data(save).message("Saved!").success(true).build();
-        } else {
-            return ApiResponse.builder().data(save).message("Error!").success(false).build();
-        }
-    }
-
-    public ApiResponse getOne(Long id) {
-        Optional<Comment> byId = commentRepository.findById(id);
+    public ApiResponse getOne(String info) {
+        Optional<Comment> byId = commentRepository.findByInfo(info);
         if (byId.isPresent()) {
             return ApiResponse.builder().data(byId.get()).success(true).message("Mana").build();
         } else {
@@ -35,27 +48,19 @@ public class CommentService {
         }
     }
 
-    public ApiResponse edit(Long id,Comment comment) {
-        Optional<Comment> byId = commentRepository.findById(id);
-        if (byId.isPresent()){
-            Comment comment1 = byId.get();
-            comment1.setInfo(comment.getInfo());
-            commentRepository.save(comment1);
-            return ApiResponse.builder().message("Edited!").success(true).data(comment1).build();
+    public ApiResponse updateOneFromMe(String token, Long id, CommentDto commentDto) {
+        Optional<Comment> byOwner_phoneAndId = commentRepository.findByOwner_PhoneAndId(token, id);
+        Comment comment = byOwner_phoneAndId.get();
+        if (byOwner_phoneAndId.isPresent()) {
+            comment.setInfo(commentDto.getInfo());
+            Comment save = commentRepository.save(comment);
+            return ApiResponse.builder().data(save).message("Saved!").success(true).build();
         }
-        else {
-            return ApiResponse.builder().success(false).message("Not Found!").build();
-        }
+        return ApiResponse.builder().success(false).message("Not Found!").build();
     }
 
     public ApiResponse delete(Long id) {
-        Optional<Comment> byId = commentRepository.findById(id);
-        if (byId.isPresent()){
-            commentRepository.deleteById(id);
-            return ApiResponse.builder().message("Deleted!").success(true).build();
-        }
-        else {
-            return ApiResponse.builder().success(false).message("Not Found!").build();
-        }
+        commentRepository.deleteById(id);
+        return ApiResponse.builder().message("Deleted!").success(true).build();
     }
 }

@@ -22,12 +22,11 @@ public class Article {
 
     private String title;
 
-    @ManyToMany
+    private String description;
+
+    @ManyToMany()
     @Column(name = "category")
     private List<Category> category;
-
-    @OneToOne
-    private Comment comment;
 
     @OneToOne
     private User owner;

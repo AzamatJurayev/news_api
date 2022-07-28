@@ -2,7 +2,10 @@ package dev.azamat.news_api.controller;
 
 import dev.azamat.news_api.dto.ApiResponse;
 import dev.azamat.news_api.dto.ArticleDto;
+import dev.azamat.news_api.entity.Article;
+import dev.azamat.news_api.entity.Comment;
 import dev.azamat.news_api.entity.Role;
+import dev.azamat.news_api.repository.ArticleRepository;
 import dev.azamat.news_api.security.JwtProvider;
 import dev.azamat.news_api.service.ArticleService;
 import dev.azamat.news_api.service.AuthService;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 
 @RestController
@@ -24,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final ArticleRepository articleRepository;
     private final AuthService authService;
     private final JwtProvider jwtProvider;
 
@@ -68,7 +73,7 @@ public class ArticleController {
         }
         return ResponseEntity.ok("Not Found!");
     }
-
+    @PreAuthorize("hasAnyAuthority('ADMIN','MODERATOR','USER')")
     @PutMapping("/{id}")
     public ResponseEntity<?> update(HttpServletRequest request, @RequestBody ArticleDto articleDto, @PathVariable Long id) {
         String token = jwtProvider.getToken(request);
@@ -79,6 +84,25 @@ public class ArticleController {
                 return ResponseEntity.status(response.isSuccess() ? 200 : 409).body(response);
             }else {
                 ApiResponse response = articleService.update(id,articleDto);
+                return ResponseEntity.status(response.isSuccess() ? 200 : 409).body(response);
+            }
+        }
+        return ResponseEntity.ok("Not Found");
+    }
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id,HttpServletRequest request){
+        String token = jwtProvider.getToken(request);
+        UserDetails userDetails = authService.loadUserByUsername(token);
+        for (GrantedAuthority authority : userDetails.getAuthorities()) {
+            if (authority.getAuthority().equalsIgnoreCase("User")) {
+                Optional<Article> byOwner_phoneAndId = articleRepository.findByOwner_PhoneAndId(token, id);
+                if (byOwner_phoneAndId.isPresent()) {
+                    ApiResponse response = articleService.delete(id);
+                    return ResponseEntity.status(response.isSuccess() ? 200 : 409).body(response);
+                }else return ResponseEntity.ok("Not Found");
+            }else {
+                ApiResponse response = articleService.delete(id);
                 return ResponseEntity.status(response.isSuccess() ? 200 : 409).body(response);
             }
         }

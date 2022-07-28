@@ -5,19 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Data
-public class ArticleDto {
+public class CommentDto {
 
-    private String title;
+    private String info;
 
-    private String commentInfo;
-    private String description;
-
-    private List<String> categories;
+    private Long articleId;
 
 }

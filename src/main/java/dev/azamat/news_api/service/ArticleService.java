@@ -34,9 +34,7 @@ public class ArticleService {
         article.setTitle(articleDto.getTitle());
         Optional<UserDetails> byPhone = userRepository.findByPhone(usernameFromToken);
         article.setOwner((User) byPhone.get());
-        Comment comment = commentRepository.save(new Comment(articleDto.getCommentInfo()));
-        article.setComment(comment);
-
+        article.setDescription(articleDto.getDescription());
         List<Category> categories = new ArrayList<>();
         for (String category : articleDto.getCategories()) {
             Optional<Category> byName = categoryRepository.findByName(category);
@@ -84,19 +82,11 @@ public class ArticleService {
 
     public ApiResponse updateOneFromMe(String token, Long id, ArticleDto articleDto) {
         Optional<Article> byOwner_phoneAndId = articleRepository.findByOwner_PhoneAndId(token, id);
-        Article article = new Article();
+        Article article = byOwner_phoneAndId.get();
         if (byOwner_phoneAndId.isPresent()) {
             article.setTitle(articleDto.getTitle());
             Optional<UserDetails> byPhone = userRepository.findByPhone(token);
             article.setOwner((User) byPhone.get());
-            Optional<Comment> byInfo = commentRepository.findByInfo(articleDto.getCommentInfo());
-            if (byInfo.isPresent()) {
-                article.setComment(byInfo.get());
-            } else {
-                Comment comment = commentRepository.save(new Comment(articleDto.getCommentInfo()));
-                article.setComment(comment);
-            }
-
             List<Category> categories = new ArrayList<>();
             for (String category : articleDto.getCategories()) {
                 Optional<Category> byName = categoryRepository.findByName(category);
@@ -120,18 +110,11 @@ public class ArticleService {
 
     public ApiResponse update(Long id, ArticleDto articleDto) {
         Optional<Article> byOwner_phoneAndId = articleRepository.findById(id);
-        Article article = new Article();
+        Article article = byOwner_phoneAndId.get();
         if (byOwner_phoneAndId.isPresent()) {
             article.setOwner(byOwner_phoneAndId.get().getOwner());
             article.setTitle(articleDto.getTitle());
-            Optional<Comment> byInfo = commentRepository.findByInfo(articleDto.getCommentInfo());
-            if (byInfo.isPresent()) {
-                article.setComment(byInfo.get());
-            } else {
-                Comment comment = commentRepository.save(new Comment(articleDto.getCommentInfo()));
-                article.setComment(comment);
-            }
-
+            article.setDescription(articleDto.getDescription());
             List<Category> categories = new ArrayList<>();
             for (String category : articleDto.getCategories()) {
                 Optional<Category> byName = categoryRepository.findByName(category);
@@ -151,5 +134,10 @@ public class ArticleService {
             }
         }
         return ApiResponse.builder().success(false).message("Not Found!").build();
+    }
+
+    public ApiResponse delete(Long id) {
+        articleRepository.deleteById(id);
+        return ApiResponse.builder().message("Deleted!").success(true).build();
     }
 }

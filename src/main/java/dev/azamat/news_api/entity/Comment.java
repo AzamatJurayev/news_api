@@ -1,5 +1,6 @@
 package dev.azamat.news_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,12 @@ public class Comment {
     private Long id;
 
     private String info;
+
+    @ManyToOne
+    private Article article;
+
+    @OneToOne
+    private User owner;
 
     public Comment(String info) {
         this.info = info;

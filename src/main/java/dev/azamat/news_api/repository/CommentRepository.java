@@ -12,4 +12,7 @@ import java.util.UUID;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     Optional<Comment> findByInfo(String comment);
+
+    Optional<Comment> findByOwner_PhoneAndId(String token, Long id);
+
 }
